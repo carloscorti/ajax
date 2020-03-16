@@ -28,6 +28,7 @@ Instructions:
    * @param  {Object} data - The raw data describing the planet.
    */
   function createPlanetThumb(data) {
+    //debugger;
     var pT = document.createElement('planet-thumb');
     for (var d in data) {
       pT[d] = data[d];
@@ -59,14 +60,95 @@ Instructions:
 
   window.addEventListener('WebComponentsReady', function() {
     home = document.querySelector('section[data-route="home"]');
+
     /*
     Refactor this code!
      */
     getJSON('../data/earth-like-results.json')
-    .then(function(response) {
-      response.results.forEach(function(url) {
-        getJSON(url).then(createPlanetThumb);
-      });
-    });
+      .then( response => {
+        
+        addSearchHeader(response.query);
+
+        /*async secuancial con generator
+
+        function* genera(response,callfunct) {
+            debugger;
+          for (let i=0; i<response.results.length; i++){
+            yield callfunct(response.results[i]);
+            debugger;
+             
+          };
+        };
+
+        function planet (url) {
+          debugger;
+          getJSON(url)
+          .then(data => {
+            debugger;
+            createPlanetThumb(data);
+            iterator.next();
+            });
+          
+          //.catch(error => {
+            //console.log (`There was an error loading the planet ${i}: ${error}`);
+            //addSearchHeader('unknown');
+          //});
+          debugger;
+        }  
+
+        const iterator = genera(response, planet);
+        
+
+        //debugger;
+        iterator.next();
+
+        */
+
+        //async secuancial con promise de primer disparador
+        let sequence = Promise.resolve();
+        debugger;
+
+
+        response.results.forEach( url => {
+          debugger;
+          sequence = sequence.then(() => {return getJSON(url)}).then(createPlanetThumb);
+          debugger;
+        });
+      })
+        /*asyn disparado en paralelo con promise
+        //asyn disparado en paralelo con promise
+        let sequence = Promise.resolve();
+        debugger;
+
+
+        response.results.forEach( url => {
+          debugger;
+          sequence.then(() => {return getJSON(url)}).then(createPlanetThumb);
+          debugger;
+        });
+      })*/
+        
+
+        /*
+        //async secuancial sin promise de primer disparador, desparos dependen de el codigo de fondo, descontrolado
+        response.results.forEach((url, i) => {
+          debugger;
+          getJSON(url)
+            .then(createPlanetThumb)
+            //.catch(error => {
+              //console.log (`There was an error loading the planet ${i}: ${error}`)
+              //addSearchHeader('unknown')
+            //});
+        });
+        
+
+      })*/
+
+      .catch(error => {
+        console.log (`There was an error loading the search: ${error}`)
+        addSearchHeader('Search Error')
+      })
   });
+
+
 })(document);
