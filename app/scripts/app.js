@@ -26,12 +26,23 @@ proper order even if all the requests haven't finished.
    * @param  {Object} data - The raw data describing the planet.
    */
   function createPlanetThumb(data) {
-    var pT = document.createElement('planet-thumb');
+    /*var pT = document.createElement('planet-thumb');
     for (var d in data) {
       pT[d] = data[d];
     }
-    //debugger;
+    
     home.appendChild(pT);
+    console.log('rendered: ' + data.pl_name);*/
+
+    return new Promise(function(resolve) {
+      var pT = document.createElement('planet-thumb');
+      for (var d in data) {
+        pT[d] = data[d];
+      }
+      home.appendChild(pT);
+      console.log('rendered: ' + data.pl_name);
+      resolve();
+    });
   }
 
   /**
@@ -49,8 +60,23 @@ proper order even if all the requests haven't finished.
    * @return {Promise}    - A promise that passes the parsed JSON response.
    */
   function getJSON(url) {
-    return get(url).then(function(response) {
+    /*return get(url).then(function(response) {
       return response.json();
+    });*/
+    console.log('sent: ' + url);
+    return get(url).then(function(response) {
+      // For testing purposes, I'm making sure that the urls don't return in order
+      if (url === 'data/planets/Kepler-62f.json') {
+        return new Promise(function(resolve) {
+          setTimeout(function() {
+            console.log('received: ' + url);
+            resolve(response.json());
+          }, 2000);
+        });
+      } else {
+        console.log('received: ' + url);
+        return response.json();
+      }
     });
   }
 
@@ -63,82 +89,50 @@ proper order even if all the requests haven't finished.
 
     
 
-    //let secuence = Promise.resolve();
+    
 
     getJSON('../data/earth-like-results.json')
-      .then(response => 
-          //{response.results.forEach( url => {secuence.then(url=> getJSON(url) ) }) })
-          {//debugger;
-            return Promise.all (response.results.map(url => getJSON(url)))  })
-
-      .then(planets => {
-          /*let secuence = Promise.resolve();
-
-          //debugger;
-
-          planets.forEach( (planet, index )=>
-          
-          {debugger;
-
-          secuence = secuence.then(() => {
-            index === 2  ? setTimeout(() => createPlanetThumb(planet), 2000) : createPlanetThumb(planet)}
-            //createPlanetThumb(planet)}
-            )}
-          )*/
-        
-        /*function* genera(items, callback){
-          debugger;
-          for (let i=0; i<items.length; i++){
-            yield execTumb(items[i], callback);
-          }
-        };*/
-        function* genera(items){
-          debugger;
-          
-          for (let i=0; i<items.length; i++){
-            //debugger;
-            //yield execTumb(items[i]);
-            it = yield items[it||0];
-          }
-          //let i = 0;
-          
-        };
-        
-        /*function execTumb (planet, callback) {
-          debugger;
-          createPlanetThumb(planet);
-          callback();
-          //iterator.next();
-        }*/
-        function execTumb (planet) {
-          //debugger;
-          createPlanetThumb(planet);
-          //iterator.next();
-        };
-        
-        //debugger;
-        /*const iterator =  genera(planets, () => {
-          debugger;
-          iterator.next();
-          debugger;});*/
-        const iterator =  genera(planets);
-        for (let it=0; it<planets.length; it++){
-          //debugger;
-          //iterator.next();
-          //if (it === 4){
-            debugger;
-            (it === 1) ? setTimeout(()=>iterator.next(it), (Math.random()*2000)+4000) : iterator.next(it)
-            //(it === 2) ? setTimeout(()=>iterator.next(), (Math.random()*2000)+4000) : iterator.next()
-            //setTimeout(()=>iterator.next(), Math.random()*20000)
-          //}else{
-            //debugger;
-            //iterator.next()
-          //} 
-        }
-          //(index % 2===0) ? setTimeout(iterator.next(), 5000) : iterator.next()});
-
+      
+      //solucion con promises concatenadas (o array de promises), (solo con este .then)
+      //(por Cameron Pittman @cwpittman udacity)
+      .then(response => {
+        let secuence = Promise.resolve(); 
+        const promiseArray = response.results.map(url => getJSON(url));
+        promiseArray.forEach (request => secuence = secuence.then(()=>request.then(createPlanetThumb)))
+      
       })
+
+      /*
+      .then(response => Promise.all (response.results.map(url => getJSON(url)))  )
+
+
+      
+      .then(planets => {
+        
+ 
+        //solucion con promises concatenadas (o array de promises), (solo con este .then)
+        let secuence = Promise.resolve();
+        //planets.forEach( (planet) => secuence = secuence.then(() => createPlanetThumb(planet)  )  )
+        planets.forEach( (planet) => createPlanetThumb(planet)  )  
+
+        
+        /*
+        //solucion con generator
+        function* genera(items){
+          for (let i=0; i<items.length; i++){
+            createPlanetThumb(items[yield]);
+          }         
+        };
+
+        const iterator =  genera(planets);
+        iterator.next();
+        for (let it=0; it<planets.length; it++){
+          iterator.next(it);
+          //de esta manera puedo alterar el orden de aparicion como se necesite, en este caso seria el 1° elemento
+          //(it === 0) ? setTimeout(()=>iterator.next(it), 0 : iterator.next(it)
+        }
+        
+      }) */
       .catch (e => `There was an error: ${e}`)
-      ////debugger;
   });
 })(document);
