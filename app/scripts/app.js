@@ -30,6 +30,7 @@ proper order even if all the requests haven't finished.
     for (var d in data) {
       pT[d] = data[d];
     }
+    //debugger;
     home.appendChild(pT);
   }
 
@@ -58,6 +59,86 @@ proper order even if all the requests haven't finished.
     /*
     Your code goes here!
      */
-    // getJSON('../data/earth-like-results.json')
+
+
+    
+
+    //let secuence = Promise.resolve();
+
+    getJSON('../data/earth-like-results.json')
+      .then(response => 
+          //{response.results.forEach( url => {secuence.then(url=> getJSON(url) ) }) })
+          {//debugger;
+            return Promise.all (response.results.map(url => getJSON(url)))  })
+
+      .then(planets => {
+          /*let secuence = Promise.resolve();
+
+          //debugger;
+
+          planets.forEach( (planet, index )=>
+          
+          {debugger;
+
+          secuence = secuence.then(() => {
+            index === 2  ? setTimeout(() => createPlanetThumb(planet), 2000) : createPlanetThumb(planet)}
+            //createPlanetThumb(planet)}
+            )}
+          )*/
+        
+        /*function* genera(items, callback){
+          debugger;
+          for (let i=0; i<items.length; i++){
+            yield execTumb(items[i], callback);
+          }
+        };*/
+        function* genera(items){
+          debugger;
+          
+          for (let i=0; i<items.length; i++){
+            //debugger;
+            //yield execTumb(items[i]);
+            it = yield items[it||0];
+          }
+          //let i = 0;
+          
+        };
+        
+        /*function execTumb (planet, callback) {
+          debugger;
+          createPlanetThumb(planet);
+          callback();
+          //iterator.next();
+        }*/
+        function execTumb (planet) {
+          //debugger;
+          createPlanetThumb(planet);
+          //iterator.next();
+        };
+        
+        //debugger;
+        /*const iterator =  genera(planets, () => {
+          debugger;
+          iterator.next();
+          debugger;});*/
+        const iterator =  genera(planets);
+        for (let it=0; it<planets.length; it++){
+          //debugger;
+          //iterator.next();
+          //if (it === 4){
+            debugger;
+            (it === 1) ? setTimeout(()=>iterator.next(it), (Math.random()*2000)+4000) : iterator.next(it)
+            //(it === 2) ? setTimeout(()=>iterator.next(), (Math.random()*2000)+4000) : iterator.next()
+            //setTimeout(()=>iterator.next(), Math.random()*20000)
+          //}else{
+            //debugger;
+            //iterator.next()
+          //} 
+        }
+          //(index % 2===0) ? setTimeout(iterator.next(), 5000) : iterator.next()});
+
+      })
+      .catch (e => `There was an error: ${e}`)
+      ////debugger;
   });
 })(document);
