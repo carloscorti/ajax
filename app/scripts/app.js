@@ -26,23 +26,12 @@ proper order even if all the requests haven't finished.
    * @param  {Object} data - The raw data describing the planet.
    */
   function createPlanetThumb(data) {
-    /*var pT = document.createElement('planet-thumb');
+    var pT = document.createElement('planet-thumb');
     for (var d in data) {
       pT[d] = data[d];
     }
-    
     home.appendChild(pT);
-    console.log('rendered: ' + data.pl_name);*/
-
-    return new Promise(function(resolve) {
-      var pT = document.createElement('planet-thumb');
-      for (var d in data) {
-        pT[d] = data[d];
-      }
-      home.appendChild(pT);
-      console.log('rendered: ' + data.pl_name);
-      resolve();
-    });
+    console.log('rendered: ' + data.pl_name);
   }
 
   /**
@@ -82,57 +71,17 @@ proper order even if all the requests haven't finished.
 
   window.addEventListener('WebComponentsReady', function() {
     home = document.querySelector('section[data-route="home"]');
-    /*
-    Your code goes here!
-     */
-
-
-    
-
-    
 
     getJSON('../data/earth-like-results.json')
-      
-      //solucion con promises concatenadas (o array de promises), (solo con este .then)
-      //(por Cameron Pittman @cwpittman udacity)
       .then(response => {
-        let secuence = Promise.resolve(); 
-        const promiseArray = response.results.map(url => getJSON(url));
-        promiseArray.forEach (request => secuence = secuence.then(()=>request.then(createPlanetThumb)))
-      
-      })
-
-      /*
-      .then(response => Promise.all (response.results.map(url => getJSON(url)))  )
-
-
-      
-      .then(planets => {
+        (async () => {
+          const promiseArray = response.results.map(url => getJSON(url));
         
- 
-        //solucion con promises concatenadas (o array de promises), (solo con este .then)
-        let secuence = Promise.resolve();
-        //planets.forEach( (planet) => secuence = secuence.then(() => createPlanetThumb(planet)  )  )
-        planets.forEach( (planet) => createPlanetThumb(planet)  )  
-
-        
-        /*
-        //solucion con generator
-        function* genera(items){
-          for (let i=0; i<items.length; i++){
-            createPlanetThumb(items[yield]);
-          }         
-        };
-
-        const iterator =  genera(planets);
-        iterator.next();
-        for (let it=0; it<planets.length; it++){
-          iterator.next(it);
-          //de esta manera puedo alterar el orden de aparicion como se necesite, en este caso seria el 1° elemento
-          //(it === 0) ? setTimeout(()=>iterator.next(it), 0 : iterator.next(it)
-        }
-        
-      }) */
+          for await (const request of promiseArray) {
+            createPlanetThumb(request)
+          }
+        })();       
+      }) 
       .catch (e => `There was an error: ${e}`)
   });
 })(document);
