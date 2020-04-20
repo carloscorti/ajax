@@ -74,13 +74,19 @@ proper order even if all the requests haven't finished.
 
     getJSON('../data/earth-like-results.json')
       .then(response => {
-        (async () => {
-          const promiseArray = response.results.map(url => getJSON(url));
-        
-          for await (const request of promiseArray) {
-            createPlanetThumb(request)
-          }
-        })();       
+        const promiseArray = response.results.map(url => getJSON(url));
+        async function* genera(){  
+          while (true) {   
+            let data = await (yield);  
+            createPlanetThumb(data);
+          };
+        };
+
+        const iterator = genera();
+        iterator.next();
+        promiseArray.forEach (request => {
+          iterator.next(request)
+        })      
       }) 
       .catch (e => `There was an error: ${e}`)
   });
